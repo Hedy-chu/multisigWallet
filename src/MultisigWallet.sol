@@ -13,6 +13,7 @@ contract MultisigWallet {
     );
     event ConfirmTransaction(address indexed owner, uint indexed _transIndex);
     event ExecuteTransaction(address indexed owner, uint indexed _transIndex);
+    
     address[] public owners;
     mapping (address => bool) public isOwner;
     uint256 public numOfConfirmed;
@@ -76,7 +77,7 @@ contract MultisigWallet {
                 data:_data
             }));
         emit SubmitTransaction(msg.sender, transactions.length-1, _to, _value, _data);
-        
+
         return transactions.length;  
 
     }
