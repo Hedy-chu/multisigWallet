@@ -3,6 +3,16 @@ pragma solidity ^0.8.20;
 import {Test, console} from "forge-std/Test.sol";
 
 contract MultisigWallet {
+    event Deposit(address indexed sender, uint amount, uint balance);
+    event SubmitTransaction(
+        address indexed owner,
+        uint indexed _transIndex,
+        address indexed to,
+        uint value,
+        bytes data
+    );
+    event ConfirmTransaction(address indexed owner, uint indexed _transIndex);
+    event ExecuteTransaction(address indexed owner, uint indexed _transIndex);
     address[] public owners;
     mapping (address => bool) public isOwner;
     uint256 public numOfConfirmed;
@@ -65,7 +75,10 @@ contract MultisigWallet {
                 executed:false,
                 data:_data
             }));
+        emit SubmitTransaction(msg.sender, transactions.length-1, _to, _value, _data);
+        
         return transactions.length;  
+
     }
 
     // confirm transcation
@@ -75,6 +88,8 @@ contract MultisigWallet {
         transactions[_transIndex].signCount++;
 
         isConfirm[_transIndex][msg.sender] = true;
+
+        emit ConfirmTransaction(msg.sender, _transIndex);
         
     }
     // excute transcation
@@ -85,9 +100,11 @@ contract MultisigWallet {
         console.log(transaction.value);
         (bool success,) = transaction.to.call{value: transaction.value}(transaction.data);
         require(success,"transaction not success");
+
+        emit ExecuteTransaction(msg.sender, _transIndex);
     }
     // 接收eth
     receive() external payable {
-
+        emit Deposit(msg.sender, msg.value, address(this).balance);
     } 
 }
